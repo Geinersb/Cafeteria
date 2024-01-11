@@ -1,12 +1,19 @@
 const {src,dest,watch,series,parallel} = require('gulp');
+
+//CSS Y SASS
 const sass= require('gulp-sass')(require('sass'));
 const postcss = require('gulp-postcss');
 const autoprefixer = require('autoprefixer');
 
+
+//IMAGENES
+const imagemin = require('gulp-imagemin');
+const webp = require('gulp-webp');
+
+
 function css(done){
 //conmpilar sass 
 //pasos: 1 identificar archivo-2compilarla 3-guardar el .css
-
 src('src/scss/app.scss')
     .pipe(sass())
     .pipe(postcss([autoprefixer()]))
@@ -16,10 +23,29 @@ src('src/scss/app.scss')
 }
 
 
+function imagenes(done){
+src('src/img/**/*')
+.pipe(imagemin({optimizationLevel: 3}))
+.pipe(dest('build/img'));
+
+done();
+}
+
+
+function versionWebp(done){
+
+src('src/img/**/*.{png,jpg}')
+.pipe(webp())
+.pipe(dest('build/img'))
+
+    done();
+}
+
+
 function dev(){
 //este watch es para buscar todos los archivos scss 
 watch('src/scss/**/*.scss',css);
-
+watch('src/img/**/*',imagenes);
 //watch('src/scss/app.scss',css);
 }
 
@@ -31,7 +57,10 @@ watch('src/scss/**/*.scss',css);
 exports.css = css;
 exports.dev = dev;
 // exports.default = tareaDefault;
-exports.default = series(css,dev);
+exports.imagenes = imagenes;
+exports.versionWebp = versionWebp;
+exports.default = series(imagenes,versionWebp,css,dev);
+
 
 
 //SERIES - se inicia una tarea, y hasta que finaliza, inicia la siguiente
